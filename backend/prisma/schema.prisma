@@ -20,6 +20,7 @@ model User {
   cpf          String  @unique @db.VarChar(11)
   phone        String? @unique @db.VarChar(11)
   role         Role    @default(client)
+  carts        Cart[]
 
   @@map("users")
 }
@@ -31,6 +32,7 @@ model Product {
   price         Decimal        @db.Decimal(10, 2)
   stock         Int
   productImages ProductImage[]
+  cartItems     CartItem[]
 
   @@map("products")
 }
@@ -45,4 +47,31 @@ model ProductImage {
 
   @@unique([position, productId])
   @@map("product_images")
+}
+
+enum Status {
+  active
+  finished
+}
+
+model Cart {
+  id        Int        @id @default(autoincrement())
+  userId    Int        @map("user_id")
+  status    Status
+  user      User       @relation(fields: [userId], references: [id])
+  cartItems CartItem[]
+
+  @@map("carts")
+}
+
+model CartItem {
+  cartId    Int     @map("cart_id")
+  productId Int     @map("product_id")
+  quantity  Int
+  subtotal  Decimal @db.Decimal(10, 2)
+  cart      Cart    @relation(fields: [cartId], references: [id])
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@id([cartId, productId])
+  @@map("cart_items")
 }
