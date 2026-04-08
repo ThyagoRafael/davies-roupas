@@ -29,6 +29,12 @@ export class UserController {
 			throw new AppError("Esse CPF já está cadastrado", 400);
 		}
 
+		const phoneExists = await prisma.user.findUnique({ where: { cpf: bodyData.phone } });
+
+		if (phoneExists) {
+			throw new AppError("Esse telefone já está cadastrado", 400);
+		}
+
 		const savedUser = await prisma.user.create({ data: bodyData, select: { email: true } });
 
 		res.status(201).json(savedUser);
