@@ -63,7 +63,7 @@ git clone https://github.com/ThyagoRafael/davies-roupas.git
 cd davies-roupas
 ```
 
-**2. Instalação de Dependências**
+**2. Instalação de Dependências**  
 Você deve instalar as dependências em ambas as pastas:
 ```bash
 # Back-end
@@ -75,7 +75,7 @@ cd ../frontend
 npm install
 ```
 
-**3. Configuração de Variáveis de Ambiente (.env)**
+**3. Configuração de Variáveis de Ambiente (.env)**  
 Crie os arquivos de configuração baseados nos exemplos:
 
 *No Back-end (`backend`):*
@@ -90,13 +90,13 @@ cp .env.example .env
 # Abra o arquivo .env e preencha a URL da API (VITE_API_URL) e chaves públicas
 ```
 
-**4. Migrações do Banco de Dados**
+**4. Migrações do Banco de Dados**  
 Na pasta `backend`, execute:
 ```bash
 npx prisma migrate dev
 ```
 
-**5. Execução**
+**5. Execução**  
 Inicie os dois serviços simultaneamente em terminais separados:
 
 * **Terminal 1 (Back-end):** Dentro de `backend` -> `npm run dev`
