@@ -78,7 +78,7 @@ npm install
 **3. Configuração de Variáveis de Ambiente (.env)**  
 Crie os arquivos de configuração baseados nos exemplos:
 
-*No Back-end (`backend`):*
+*No Back-end (`/backend`):*
 ```bash
 cp .env.example .env
 # Abra o arquivo .env e preencha as chaves do DATABASE_URL, Stripe e Cloudinary
@@ -99,8 +99,8 @@ npx prisma migrate dev
 **5. Execução**  
 Inicie os dois serviços simultaneamente em terminais separados:
 
-* **Terminal 1 (Back-end):** Dentro de `backend` -> `npm run dev`
-* **Terminal 2 (Front-end):** Dentro de `frontend` -> `npm run dev`
+* **Terminal 1 (Back-end):** Dentro de `/backend` -> `npm run dev`
+* **Terminal 2 (Front-end):** Dentro de `/frontend` -> `npm run dev`
 
 ---
 
