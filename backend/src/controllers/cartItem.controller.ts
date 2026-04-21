@@ -1,0 +1,207 @@
+import type { Request, Response } from "express";
+import { prisma } from "../config/prisma.js";
+import { AppError } from "../errors/AppError.js";
+import { Prisma } from "../generated/prisma/client.js";
+
+type Action = "increment" | "decrement";
+
+export class CartItemController {
+	addToCart = async (req: Request, res: Response) => {
+		const userId = Number(req.params.userId);
+		const { productId } = req.body;
+
+		let cart = await prisma.cart.findFirst({
+			where: {
+				userId,
+				status: "active",
+			},
+		});
+
+		if (!cart) {
+			cart = await prisma.cart.create({
+				data: {
+					status: "active",
+					userId,
+				},
+			});
+		}
+
+		const product = await prisma.product.findUnique({
+			where: {
+				id: productId,
+			},
+		});
+
+		if (!product) {
+			throw new Error("O produto não existe");
+		}
+
+		await prisma.cartItem.upsert({
+			where: {
+				cartId_productId: {
+					cartId: cart.id,
+					productId,
+				},
+			},
+			update: {
+				quantity: {
+					increment: 1,
+				},
+			},
+			create: {
+				cartId: cart.id,
+				productId,
+				quantity: 1,
+				subtotal: product.price,
+			},
+		});
+
+		res.status(201).json({ message: "Produto adicionado ao carrinho" });
+	};
+
+	updateCartItem = async (req: Request, res: Response) => {
+		const userId = Number(req.params.userId);
+		const { productId, action } = req.body as { productId: number; action: Action };
+		const actionValues = ["increment", "decrement"];
+
+		if (!actionValues.includes(action)) {
+			throw new AppError("Ação não reconhecida");
+		}
+
+		const cart = await prisma.cart.findFirst({
+			where: {
+				userId,
+				status: "active",
+			},
+			include: {
+				cartItems: {
+					include: {
+						product: {
+							select: {
+								price: true,
+							},
+						},
+					},
+				},
+			},
+		});
+
+		if (!cart) {
+			throw new Error("Erro no carrinho");
+		}
+
+		const cartItem = cart.cartItems.find((item) => item.productId === productId);
+
+		if (!cartItem) {
+			throw new Error("Item não encontrado");
+		}
+
+		const newQuantity = action === "increment" ? cartItem.quantity + 1 : cartItem.quantity - 1;
+
+		const product = await prisma.product.findUnique({
+			where: {
+				id: productId,
+			},
+			select: {
+				price: true,
+			},
+		});
+
+		if (!product) {
+			throw new Error("Produto não encontrado");
+		}
+
+		const newSubtotal = product.price.mul(newQuantity);
+
+		await prisma.cartItem.update({
+			where: {
+				cartId_productId: {
+					cartId: cart.id,
+					productId,
+				},
+			},
+			data: {
+				quantity: newQuantity,
+				subtotal: newSubtotal,
+			},
+		});
+
+		const updatedCart = await prisma.cart.findUnique({
+			where: {
+				id: cart.id,
+			},
+			include: {
+				cartItems: {
+					include: {
+						product: {
+							select: { price: true },
+						},
+					},
+				},
+			},
+		});
+
+		const total = updatedCart!.cartItems.reduce((acc, item) => {
+			return acc.plus(item.product.price.mul(item.quantity));
+		}, new Prisma.Decimal(0));
+
+		res.status(200).json({ quantity: newQuantity, subtotal: newSubtotal, total });
+	};
+
+	deleteCartItem = async (req: Request, res: Response) => {
+		const userId = Number(req.params.userId);
+		const { productId } = req.body;
+
+		const cart = await prisma.cart.findFirst({
+			where: {
+				userId,
+				status: "active",
+			},
+			include: {
+				cartItems: {
+					include: {
+						product: {
+							select: {
+								price: true,
+							},
+						},
+					},
+				},
+			},
+		});
+
+		if (!cart) {
+			throw new Error("Erro no carrinho");
+		}
+
+		await prisma.cartItem.delete({
+			where: {
+				cartId_productId: {
+					cartId: cart.id,
+					productId,
+				},
+			},
+		});
+
+		const updatedCart = await prisma.cart.findUnique({
+			where: {
+				id: cart.id,
+			},
+			include: {
+				cartItems: {
+					include: {
+						product: {
+							select: { price: true },
+						},
+					},
+				},
+			},
+		});
+
+		const total = updatedCart!.cartItems.reduce((acc, item) => {
+			return acc.plus(item.product.price.mul(item.quantity));
+		}, new Prisma.Decimal(0));
+
+		res.status(200).json({ message: "Produto deletado do carrinho", total });
+	};
+}
