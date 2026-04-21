@@ -50,10 +50,10 @@ export class ProductController {
 	};
 
 	getOne = async (req: Request, res: Response) => {
-		const { productId } = req.params;
+		const productId = Number(req.params.productId);
 
 		const product = await prisma.product.findUnique({
-			where: { id: Number(productId) },
+			where: { id: productId },
 			include: {
 				productImages: {
 					orderBy: { position: "asc" },
@@ -69,11 +69,11 @@ export class ProductController {
 	};
 
 	update = async (req: Request, res: Response) => {
-		const { productId } = req.params;
+		const productId = Number(req.params.productId);
 		const { name, description, price, stock } = req.body;
 		let updateData = {};
 
-		const product = await prisma.product.findUnique({ where: { id: Number(productId) } });
+		const product = await prisma.product.findUnique({ where: { id: productId } });
 
 		if (!product) {
 			throw new AppError("Produto não encontrado", 404);
@@ -94,9 +94,9 @@ export class ProductController {
 	};
 
 	destroy = async (req: Request, res: Response) => {
-		const { productId } = req.params;
+		const productId = Number(req.params.productId);
 
-		const product = await prisma.product.findUnique({ where: { id: Number(productId) } });
+		const product = await prisma.product.findUnique({ where: { id: productId } });
 
 		if (!product) {
 			throw new AppError("Produto não encontrado", 404);
