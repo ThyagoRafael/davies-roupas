@@ -7,5 +7,6 @@ const cartItemController = new CartItemController();
 cartItemRoutes.post("/:userId", cartItemController.addToCart);
 cartItemRoutes.put("/:userId", cartItemController.updateCartItem);
 cartItemRoutes.delete("/:userId", cartItemController.deleteCartItem);
+cartItemRoutes.delete("/:userId/all", cartItemController.deleteAllCartItems);
 
 export { cartItemRoutes };
