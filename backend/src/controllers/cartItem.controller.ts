@@ -171,7 +171,7 @@ export class CartItemController {
 		});
 
 		if (!cart) {
-			throw new Error("Erro no carrinho");
+			throw new AppError("Erro no carrinho");
 		}
 
 		await prisma.cartItem.delete({
@@ -203,5 +203,35 @@ export class CartItemController {
 		}, new Prisma.Decimal(0));
 
 		res.status(200).json({ message: "Produto deletado do carrinho", total });
+	};
+
+	deleteAllCartItems = async (req: Request, res: Response) => {
+		const userId = Number(req.params.userId);
+
+		const cart = await prisma.cart.findFirst({
+			where: {
+				userId,
+				status: "active",
+			},
+			include: {
+				cartItems: true,
+			},
+		});
+
+		if (!cart) {
+			throw new AppError("Erro no carrinho");
+		}
+
+		if (cart.cartItems.length === 0) {
+			return res.status(200).json({ message: "Não há itens no carrinho" });
+		}
+
+		await prisma.cartItem.deleteMany({
+			where: {
+				cartId: cart.id,
+			},
+		});
+
+		res.status(200).json({ message: "Todos os itens do carrinho foram removidos" });
 	};
 }
