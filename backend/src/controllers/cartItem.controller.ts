@@ -10,6 +10,10 @@ export class CartItemController {
 		const userId = Number(req.params.userId);
 		const { productId } = req.body;
 
+		if (!req.user || userId !== req.user.id) {
+			return res.status(403).json({ message: "Acesso negado" });
+		}
+
 		let cart = await prisma.cart.findFirst({
 			where: {
 				userId,
@@ -63,6 +67,10 @@ export class CartItemController {
 		const userId = Number(req.params.userId);
 		const { productId, action } = req.body as { productId: number; action: Action };
 		const actionValues = ["increment", "decrement"];
+
+		if (!req.user || userId !== req.user.id) {
+			return res.status(403).json({ message: "Acesso negado" });
+		}
 
 		if (!actionValues.includes(action)) {
 			throw new AppError("Ação não reconhecida");
@@ -152,6 +160,10 @@ export class CartItemController {
 		const userId = Number(req.params.userId);
 		const { productId } = req.body;
 
+		if (!req.user || userId !== req.user.id) {
+			return res.status(403).json({ message: "Acesso negado" });
+		}
+
 		const cart = await prisma.cart.findFirst({
 			where: {
 				userId,
@@ -207,6 +219,10 @@ export class CartItemController {
 
 	deleteAllCartItems = async (req: Request, res: Response) => {
 		const userId = Number(req.params.userId);
+
+		if (!req.user || userId !== req.user.id) {
+			return res.status(403).json({ message: "Acesso negado" });
+		}
 
 		const cart = await prisma.cart.findFirst({
 			where: {
